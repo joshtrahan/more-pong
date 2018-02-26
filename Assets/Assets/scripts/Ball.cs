@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Networking;
 
-public class Ball : MonoBehaviour {
+public class Ball : NetworkBehaviour {
 	private Rigidbody rb;
 	public Text playerText;
 	public Text opponentText;
@@ -16,12 +17,9 @@ public class Ball : MonoBehaviour {
 
 	void Start () {
 		rb = GetComponent<Rigidbody> ();
-		resetBall ();
 
 		acc = 1.05f;
 		maxSpeed = 60f;
-
-		Cursor.visible = false;
 	}
 
 	void FixedUpdate () {
@@ -38,15 +36,13 @@ public class Ball : MonoBehaviour {
 			switchDirection (other);
 		}
 		if (other.gameObject.CompareTag ("Goal")){
+			resetBall ();
+
 			if (transform.position.z >= 0) {
 				playerScore += 1;
-				playerText.text = "Player: " + playerScore;
 			} else {
 				opponentScore += 1;
-				opponentText.text = "Opponent: " + opponentScore;
 			}
-
-			resetBall ();
 		}
 	}
 
@@ -71,8 +67,6 @@ public class Ball : MonoBehaviour {
 	}
 
 	void resetBall (){
-		transform.position = new Vector3 (0, 0, 0);
-		rb.velocity = new Vector3 (0, 0, 0);
-		rb.AddForce (10f, 5f, 50f);
+		Destroy (gameObject);
 	}
 }
