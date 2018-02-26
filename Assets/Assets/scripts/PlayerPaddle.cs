@@ -6,12 +6,15 @@ using UnityEngine.Networking;
 public class PlayerPaddle : NetworkBehaviour {
 	private float zCoord;
 	private float zOffset = 10;
+	private float heightOffset = 100;
 
+	[SyncVar]
 	private float spawnTimer = 2;
 	private float spawnTimerMax = 2;
 
 	public GameObject ballPrefab;
 	private GameObject ball;
+
 
 	private Camera playerCam;
 
@@ -35,14 +38,16 @@ public class PlayerPaddle : NetworkBehaviour {
 
 	[Command]
 	void CmdSpawnBall(){
-		if (spawnTimer <= spawnTimerMax) {
-			return;
-		}
-		spawnTimer = 0f;
+		SpawnBall ();
+	}
 
-		print ("should be spawning");
+	[ClientRpc]
+	void RpcSetScores(int player1, int player2){
+
+	}
+
+	void SpawnBall(){
 		if (ball != null) {
-			print ("ball not null");
 			Destroy (ball);
 		}
 
@@ -51,10 +56,20 @@ public class PlayerPaddle : NetworkBehaviour {
 			new Vector3 (0, 0, 0),
 			new Quaternion ());
 
-		ball.GetComponent<Rigidbody> ().velocity = new Vector3 (3, 5, -10);
+		int[] mults = new int[3];
+		for (int i = 0; i < 3; i++) {
+			if (Random.Range (0, 2) == 1) {
+				mults [i] = 1;
+			} else {
+				mults [i] = -1;
+			}
+		}
+
+		ball.GetComponent<Rigidbody> ().velocity = new Vector3 (
+			3 * mults[0], 5 * mults[1], 10 * mults[2]);
+		//ball.GetComponent<Rigidbody> ().AddForce (3, 5, -10);
 
 		NetworkServer.Spawn (ball);
-		print ("ball pos: " + ball.transform.position);
 	}
 
 	// Update is called once per frame
@@ -64,12 +79,12 @@ public class PlayerPaddle : NetworkBehaviour {
 		}
 
 		spawnTimer += Time.deltaTime;
-		if (Input.GetKeyDown ("space")) {
-			print ("space");
+		if (Input.GetKeyDown ("space") && spawnTimer >= spawnTimerMax) {
 			CmdSpawnBall ();
+			spawnTimer = 0f;
 		}
 
-		Vector2 mousePos = Input.mousePosition + new Vector3(0, 75, 0);
+		Vector2 mousePos = Input.mousePosition + new Vector3(0, heightOffset, 0);
 		//mousePos.y = Camera.main.pixelHeight - Input.mousePosition.y;
 
 		Vector3 mouseWorldPoint = Camera.main.ScreenToWorldPoint (new Vector3 (mousePos.x, mousePos.y, 

@@ -6,8 +6,10 @@ using UnityEngine.Networking;
 
 public class Ball : NetworkBehaviour {
 	private Rigidbody rb;
+
 	public Text playerText;
 	public Text opponentText;
+	public GameObject scoreDisplayPrefab;
 
 	private int playerScore = 0;
 	private int opponentScore = 0;
@@ -17,36 +19,61 @@ public class Ball : NetworkBehaviour {
 
 	void Start () {
 		rb = GetComponent<Rigidbody> ();
+		makeScoreDisplays ();
 
 		acc = 1.05f;
 		maxSpeed = 60f;
 	}
 
-	void FixedUpdate () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
+	void makeScoreDisplays () {
+		GameObject playerScore = (GameObject)Instantiate (
+			scoreDisplayPrefab,
+			new Vector3 (-400, -30, 0),
+			new Quaternion ());
+
+		playerScore.transform.SetParent (GameObject.FindGameObjectWithTag ("UI Canvas").transform);
+
+		playerText = playerScore.GetComponent<Text> ();
+		playerText.text = "Player: 0";
+
+		GameObject opponentScore = (GameObject)Instantiate (
+			scoreDisplayPrefab,
+			new Vector3 (400, -30, 0),
+			new Quaternion ());
+
+		opponentScore.transform.SetParent (GameObject.FindGameObjectWithTag ("UI Canvas").transform);
+
+		opponentText = opponentScore.GetComponent<Text> ();
+		opponentText.text = "Opponent: 0";
 	}
 
 	void OnTriggerEnter (Collider other) {
 		if (other.gameObject.CompareTag ("Paddle")) {
-			switchDirection (other);
+			//switchDirection (other);
+			print("collided");
+			CmdSwitchDirection (other.transform.position.z);
 		}
 		if (other.gameObject.CompareTag ("Goal")){
 			resetBall ();
 
 			if (transform.position.z >= 0) {
 				playerScore += 1;
+				playerText.text = "Player: " + playerScore.ToString ();
 			} else {
 				opponentScore += 1;
+				opponentText.text = "Opponent: " + opponentScore.ToString ();
 			}
 		}
 	}
 
-	void switchDirection (Collider other){
+	[Command]
+	void CmdSwitchDirection (float otpz){
+		print ("cmd");
+		SwitchDirection (otpz);
+	}
+
+	void SwitchDirection (float otpz){
+		print ("switching");
 		SphereCollider sc = transform.GetComponent<SphereCollider> ();
 
 		if (Mathf.Abs(rb.velocity.z) < maxSpeed) {
@@ -57,10 +84,10 @@ public class Ball : NetworkBehaviour {
 
 		if (transform.position.z < 0) {
 			transform.position = new Vector3(transform.position.x, transform.position.y, 
-				other.transform.position.z + sc.radius);
+				otpz + sc.radius);
 		} else {
 			transform.position = new Vector3(transform.position.x, transform.position.y, 
-				other.transform.position.z - sc.radius);
+				otpz - sc.radius);
 		}
 
 		print(rb.velocity.z);

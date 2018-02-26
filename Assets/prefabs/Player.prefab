@@ -111,7 +111,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ballPrefab: {fileID: 1669311183803966, guid: e077a2a76adba8744b293b96b0a747e3, type: 2}
-  playerCam: {fileID: 0}
 --- !u!114 &114188243106451114
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -167,7 +166,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_TransformSyncMode: 1
-  m_SendInterval: 0.1
+  m_SendInterval: 0.033333335
   m_SyncRotationAxis: 7
   m_RotationSyncCompression: 0
   m_SyncSpin: 0
